@@ -230,3 +230,24 @@ export const supabaseInternshipService = {
     }
   }
 };
+// src/services/supabaseInternshipService.ts
+
+// Add this new function
+export async function getRecommendedInternships(userQuery: string) {
+  // 1. Get internships from Supabase
+  const internships = await fetchInternshipsFromSupabase();
+
+  // 2. Send internships + query to your Vercel AI route
+  const res = await fetch("/api/recommend", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ internships, userQuery }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch AI recommendations");
+  }
+
+  const data = await res.json();
+  return data.result; // AI text response
+}
