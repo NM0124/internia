@@ -1,4 +1,4 @@
-=// src/services/supabaseInternshipService.ts
+// src/services/supabaseInternshipService.ts
 import { createClient } from "@supabase/supabase-js";
 
 // Initialize Supabase client with your environment variables
@@ -36,4 +36,10 @@ export async function getRecommendedInternships(userQuery: string) {
 
   if (!res.ok) {
     const errorText = await res.text();
-    console.error("AI route
+    console.error("AI route error:", errorText);
+    throw new Error("Failed to fetch AI recommendations");
+  }
+
+  const data = await res.json();
+  return data.result; // AI text response
+}
