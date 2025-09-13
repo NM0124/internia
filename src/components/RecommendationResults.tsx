@@ -52,7 +52,7 @@ export default function RecommendationResults({ formData, onBack }: Recommendati
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <div className="text-center space-y-2">
           <h2 className="text-xl font-semibold">AI Analyzing Your Profile</h2>
-          <p className="text-muted-foreground">GPT-4o-mini is analyzing 50+ internships to find your perfect matches...</p>
+          <p className="text-muted-foreground">AI is analyzing 500+ internships to find your perfect matches...</p>
         </div>
       </div>
     );
