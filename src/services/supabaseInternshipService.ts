@@ -255,40 +255,7 @@ export async function getRecommendedInternships(userQuery: string) {
   const data = await res.json();
   return data.result; // AI text response
 }
-Next step for you
-Redeploy after this change.
 
-Try again, then check your browser console (F12 → Console tab).
-
-It will log something like:
-
-css
-Copy code
-Sending to AI route: { internshipsCount: 0, userQuery: "web dev internship" }
-or show the error returned from the API.
-
-👉 Do you want me to also rewrite your /api/recommend.ts to return the error details (instead of just 400) so you can see exactly why OpenAI/Supabase is rejecting it?
-
-
-
-
-
-
-
-
-Ask ChatGPT
-You said:
-yes
-
-
-ChatGPT said:
-Perfect 👍 let’s make /api/recommend.ts give you detailed errors instead of just a vague 400/500.
-
-Here’s the updated code ⬇️ — replace your current api/recommend.ts with this:
-
-ts
-Copy code
-// api/recommend.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import OpenAI from "openai";
 
@@ -341,37 +308,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 }
-🔎 What changed?
-Logs the whole request body so you can see exactly what’s being sent.
-
-If internships are missing/empty → returns a 400 with details.
-
-If userQuery is empty → returns a 400 with details.
-
-If OpenAI fails → returns 500 with the error message.
-
-👉 Next step for you:
-
-Replace your /api/recommend.ts with this code.
-
-Redeploy on Vercel.
-
-Try again and then check:
-
-Browser console logs (from the supabaseInternshipService.ts debug we added earlier).
-
-API response at https://internia-eta.vercel.app/api/recommend.
-
-That will tell us whether the issue is with Supabase returning no internships or with OpenAI rejecting the input.
-
-Do you want me to also add a limit (e.g. send only top 10 internships to OpenAI), in case you’re passing too many and hitting size limits?
-
-
-
-
-
-
-
 // ✅ New function to fetch all internships
 export async function fetchInternships() {
   const { data, error } = await supabase.from("internship_listings").select("*");
