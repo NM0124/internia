@@ -251,3 +251,16 @@ export async function getRecommendedInternships(userQuery: string) {
   const data = await res.json();
   return data.result; // AI text response
 }
+import { supabase } from "./supabaseClient";
+
+// ✅ New function to fetch all internships
+export async function fetchInternships() {
+  const { data, error } = await supabase.from("internships").select("*");
+
+  if (error) {
+    console.error("Error fetching internships:", error);
+    throw error;
+  }
+
+  return data || [];
+}
