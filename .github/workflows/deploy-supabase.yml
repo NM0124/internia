@@ -14,10 +14,10 @@ jobs:
 
       - name: Install Supabase CLI
         run: |
-          rm -f supabase
-          curl -sL https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz | tar -xz
+          curl -sL https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz -o supabase.tar.gz
+          tar -xzf supabase.tar.gz
           chmod +x supabase
-          sudo mv supabase /usr/local/bin/
+          sudo mv supabase /usr/local/bin/supabase
 
       - name: Deploy ai-recommendations function
         env:
