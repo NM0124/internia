@@ -10,9 +10,12 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log("📩 Body received:", req.body); // 👈 log input
+
     const { internships, userQuery } = req.body;
 
     if (!internships || !userQuery) {
+      console.error("❌ Missing data:", { internships, userQuery });
       return res.status(400).json({ error: "Missing internships or userQuery" });
     }
 
@@ -33,11 +36,13 @@ export default async function handler(req, res) {
       ],
     });
 
+    console.log("✅ OpenAI raw response:", response);
+
     res.status(200).json({
       result: response.choices[0].message.content,
     });
   } catch (error) {
-    console.error("OpenAI error:", error);
+    console.error("🔥 OpenAI error:", error);
     res.status(500).json({ error: "Failed to generate recommendations" });
   }
 }
