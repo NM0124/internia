@@ -3,7 +3,7 @@ name: Deploy Supabase Functions
 on:
   push:
     branches:
-      - main  # deploy only when pushing to main branch
+      - main
 
 jobs:
   deploy:
@@ -15,9 +15,13 @@ jobs:
       - name: Install Supabase CLI
         run: |
           curl -sL https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz -o supabase.tar.gz
-          tar -xzf supabase.tar.gz
-          chmod +x supabase
-          sudo mv supabase /usr/local/bin/supabase
+          mkdir cli_tmp
+          tar -xzf supabase.tar.gz -C cli_tmp
+          chmod +x cli_tmp/supabase
+          sudo mv cli_tmp/supabase /usr/local/bin/supabase
+
+      - name: Check Supabase CLI version
+        run: supabase --version
 
       - name: Deploy ai-recommendations function
         env:
