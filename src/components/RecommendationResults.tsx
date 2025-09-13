@@ -1,6 +1,6 @@
 // src/components/RecommendationResults.tsx
 import { useEffect, useState } from "react";
-import { getRecommendedInternships } from "../services/supabaseInternshipService";
+import { fetchInternships } from "../services/supabaseInternshipService"; // ✅ assuming you already have this
 
 interface Props {
   userQuery: string;
@@ -13,13 +13,36 @@ export default function RecommendationResults({ userQuery }: Props) {
   useEffect(() => {
     async function load() {
       try {
-        const result = await getRecommendedInternships(userQuery);
-        setRecommendations(result);
+        // 1️⃣ Get internships from Supabase
+        const internships = await fetchInternships();
+
+        // Debug
+        console.log("Sending to API:", { internships, userQuery });
+
+        // 2️⃣ Send them + user query to your API
+        const response = await fetch("/api/recommend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            internships,
+            userQuery,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch AI recommendations");
+        }
+
+        const data = await response.json();
+
+        // 3️⃣ Save result from API
+        setRecommendations(data.result || "No recommendations received");
       } catch (err) {
-        console.error(err);
-        setError("Could not load AI recommendations");
+        console.error("Error fetching recommendations:", err);
+        setError("Could not get AI recommendations");
       }
     }
+
     load();
   }, [userQuery]);
 
@@ -34,4 +57,3 @@ export default function RecommendationResults({ userQuery }: Props) {
     </div>
   );
 }
-
