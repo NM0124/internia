@@ -110,7 +110,7 @@ const Index = () => {
       <footer className="bg-muted/30 border-t mt-16">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center text-muted-foreground">
-            <p>© 2025 PM Internship Portal. Government of India Initiative.</p>
+            <p>© 2025 PM Internship Portal.</p>
             <p className="mt-2 text-sm">Building tomorrow's leaders through meaningful experiences.</p>
           </div>
         </div>
