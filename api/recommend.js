@@ -1,4 +1,3 @@
-// api/recommend.js
 import OpenAI from "openai";
 
 const client = new OpenAI({
@@ -18,9 +17,27 @@ export default async function handler(req, res) {
     }
 
     const response = await client.chat.completions.create({
-      model: "gpt-4o-mini", // you can switch to gpt-4o or gpt-3.5-turbo if needed
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
           content:
-            "You are an AI that recommends the best internships for students based on their query and available opt
+            "You are an AI that recommends the best internships for students based on their query and available options.",
+        },
+        {
+          role: "user",
+          content: `Student query: ${userQuery}\nInternships: ${JSON.stringify(
+            internships
+          )}`,
+        },
+      ],
+    });
+
+    res.status(200).json({
+      result: response.choices[0].message.content,
+    });
+  } catch (error) {
+    console.error("OpenAI error:", error);
+    res.status(500).json({ error: "Failed to generate recommendations" });
+  }
+}
