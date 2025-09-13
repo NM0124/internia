@@ -253,7 +253,7 @@ export async function getRecommendedInternships(userQuery: string) {
 }
 // ✅ New function to fetch all internships
 export async function fetchInternships() {
-  const { data, error } = await supabase.from("internships").select("*");
+  const { data, error } = await supabase.from("internship_listings").select("*");
 
   if (error) {
     console.error("Error fetching internships:", error);
