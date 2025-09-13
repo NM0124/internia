@@ -235,7 +235,9 @@ export const supabaseInternshipService = {
 // Add this new function
 export async function getRecommendedInternships(userQuery: string) {
   // 1. Get internships from Supabase
-  const internships = await fetchInternshipsFromSupabase();
+  const internships = await fetchInternships();
+
+  console.log("Sending to AI route:", { internshipsCount: internships.length, userQuery });
 
   // 2. Send internships + query to your Vercel AI route
   const res = await fetch("/api/recommend", {
@@ -245,12 +247,131 @@ export async function getRecommendedInternships(userQuery: string) {
   });
 
   if (!res.ok) {
+    const errorText = await res.text();
+    console.error("AI route error:", errorText);
     throw new Error("Failed to fetch AI recommendations");
   }
 
   const data = await res.json();
   return data.result; // AI text response
 }
+Next step for you
+Redeploy after this change.
+
+Try again, then check your browser console (F12 → Console tab).
+
+It will log something like:
+
+css
+Copy code
+Sending to AI route: { internshipsCount: 0, userQuery: "web dev internship" }
+or show the error returned from the API.
+
+👉 Do you want me to also rewrite your /api/recommend.ts to return the error details (instead of just 400) so you can see exactly why OpenAI/Supabase is rejecting it?
+
+
+
+
+
+
+
+
+Ask ChatGPT
+You said:
+yes
+
+
+ChatGPT said:
+Perfect 👍 let’s make /api/recommend.ts give you detailed errors instead of just a vague 400/500.
+
+Here’s the updated code ⬇️ — replace your current api/recommend.ts with this:
+
+ts
+Copy code
+// api/recommend.ts
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    const { internships, userQuery } = req.body;
+
+    // Debug logs for safety
+    console.log("Incoming request body:", req.body);
+
+    if (!internships || internships.length === 0) {
+      return res.status(400).json({ 
+        error: "No internships provided", 
+        details: { internships } 
+      });
+    }
+
+    if (!userQuery || userQuery.trim().length === 0) {
+      return res.status(400).json({ 
+        error: "No userQuery provided", 
+        details: { userQuery } 
+      });
+    }
+
+    const response = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are an AI that recommends the best internships for students based on their query and available options." },
+        { role: "user", content: `Student query: ${userQuery}\nInternships: ${JSON.stringify(internships)}` },
+      ],
+    });
+
+    return res.status(200).json({
+      result: response.choices[0].message.content,
+    });
+  } catch (error: any) {
+    console.error("OpenAI error:", error);
+
+    return res.status(500).json({ 
+      error: "Failed to generate recommendations", 
+      details: error.message || error 
+    });
+  }
+}
+🔎 What changed?
+Logs the whole request body so you can see exactly what’s being sent.
+
+If internships are missing/empty → returns a 400 with details.
+
+If userQuery is empty → returns a 400 with details.
+
+If OpenAI fails → returns 500 with the error message.
+
+👉 Next step for you:
+
+Replace your /api/recommend.ts with this code.
+
+Redeploy on Vercel.
+
+Try again and then check:
+
+Browser console logs (from the supabaseInternshipService.ts debug we added earlier).
+
+API response at https://internia-eta.vercel.app/api/recommend.
+
+That will tell us whether the issue is with Supabase returning no internships or with OpenAI rejecting the input.
+
+Do you want me to also add a limit (e.g. send only top 10 internships to OpenAI), in case you’re passing too many and hitting size limits?
+
+
+
+
+
+
+
 // ✅ New function to fetch all internships
 export async function fetchInternships() {
   const { data, error } = await supabase.from("internship_listings").select("*");
