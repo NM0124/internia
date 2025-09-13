@@ -1,46 +1,41 @@
 // src/components/RecommendationResults.tsx
 import { useEffect, useState } from "react";
-import { fetchInternships } from "../services/supabaseInternshipService";
+import { fetchInternships, getRecommendedInternships } from "../services/supabaseInternshipService";
 
 interface Props {
-  userQuery: string;
+  userQuery?: string; // optional because sometimes parent may not provide it
 }
 
 export default function RecommendationResults({ userQuery }: Props) {
-  const [recommendations, setRecommendations] = useState<string>("Loading...");
+  const [recommendations, setRecommendations] = useState<string>("Waiting for a query...");
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // If userQuery is missing or empty, don't call the API.
+    if (!userQuery || userQuery.trim().length === 0) {
+      setRecommendations("Enter a query to get AI recommendations.");
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     async function load() {
       try {
-        // 1️⃣ Fetch internships from Supabase
-        const internships = await fetchInternships();
+        setLoading(true);
+        setError(null);
+        setRecommendations("Loading recommendations...");
 
-        console.log("🚀 Calling API with POST", { internships, userQuery });
-
-        // 2️⃣ Send to your Vercel API
-        const response = await fetch("/api/recommend", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            internships,
-            userQuery,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log("✅ API response:", data);
-
-        setRecommendations(data.result || "No recommendations received");
-      } catch (err) {
+        // Use the exported helper that will default userQuery if needed
+        const result = await getRecommendedInternships(userQuery);
+        setRecommendations(result || "No recommendations received.");
+      } catch (err: any) {
         console.error("🔥 Error fetching recommendations:", err);
-        setError("Could not get AI recommendations");
+        // If the error contains text from the API, show a helpful message:
+        const msg = err?.message || "Could not get AI recommendations";
+        setError(msg);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -48,13 +43,9 @@ export default function RecommendationResults({ userQuery }: Props) {
   }, [userQuery]);
 
   if (error) {
-    return <div className="text-red-500">{error}</div>;
+    return <div className="text-red-500 p-4">{error}</div>;
   }
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-md">
       <h2 className="text-xl font-semibold mb-2">AI Recommendations</h2>
-      <p className="whitespace-pre-line">{recommendations}</p>
-    </div>
-  );
-}
